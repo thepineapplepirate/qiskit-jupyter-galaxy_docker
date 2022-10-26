@@ -84,7 +84,7 @@ RUN mkdir /import
 
 COPY ./galaxy_script_job.py /home/$NB_USER/.ipython/profile_default/startup/00-load.py
 COPY ./ipython-profile.py /home/$NB_USER/.ipython/profile_default/startup/01-load.py
-COPY ./jupyter_notebook_config.py /home/$NB_USER/.jupyter/
+COPY ./jupyter_server_config.py /home/$NB_USER/.jupyter/jupyter_server_config.py
 
 ADD ./*.ipynb /home/$NB_USER/
 
