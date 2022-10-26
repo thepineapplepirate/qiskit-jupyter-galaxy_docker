@@ -1,7 +1,7 @@
 ## Jupyter container used for Data Science and Tensorflow
 FROM jupyter/tensorflow-notebook:tensorflow-2.6.0
 
-MAINTAINER Anup Kumar, anup.rulez@gmail.com
+LABEL maintainer="Blankenberg Lab"
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -64,6 +64,8 @@ RUN pip install --upgrade jax==0.3.10 jaxlib==0.3.10 -f https://storage.googleap
 
 RUN pip install numpy==1.20.0
 
+RUN pip install 'qiskit[all]' && pip install 'qiskit-machine-learning[torch]'
+
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && mkdir /root/.conda \
@@ -94,6 +96,13 @@ COPY ./elyra/*.* /home/$NB_USER/elyra/
 
 RUN mkdir /home/$NB_USER/data
 COPY ./data/*.tsv /home/$NB_USER/data/
+
+RUN mkdir -p /home/$NB_USER/qiskit \
+    && curl -L https://github.com/Qiskit/platypus/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-platypus* /home/$NB_USER/qiskit/platypus \
+    && curl -L https://github.com/Qiskit/qiskit-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-qiskit-tutorials* /home/$NB_USER/qiskit/qiskit-tutorials \
+    && curl -L https://github.com/qiskit-community/qiskit-community-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-community-tutorials* /home/$NB_USER/qiskit/qiskit-community-tutorials \
+    && curl -L https://github.com/qiskit-community/qiskit-textbook/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-textbook* /home/$NB_USER/qiskit/qiskit-textbook \
+    && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide
 
 # ENV variables to replace conf file
 ENV DEBUG=false \
