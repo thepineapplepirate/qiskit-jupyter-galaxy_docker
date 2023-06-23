@@ -22,21 +22,21 @@ if [ ! -f /import/home_page.ipynb ]; then
     chown $NB_USER /import/*.ipynb
 fi
 
-mkdir /import/elyra/
-cp /home/$NB_USER/elyra/*.* /import/elyra/
+## mkdir /import/elyra/
+## cp /home/$NB_USER/elyra/*.* /import/elyra/
 
-mkdir /import/data/
-cp /home/$NB_USER/data/*.tsv /import/data/
+# mkdir /import/data/
+# cp /home/$NB_USER/data/*.tsv /import/data/
 
-mkdir /import/notebooks/
-cp /home/$NB_USER/notebooks/*.ipynb /import/notebooks/
+## mkdir /import/notebooks/
+## cp /home/$NB_USER/notebooks/*.ipynb /import/notebooks/
 
 #chown $NB_USER /import/elyra
-chown $NB_USER /import/elyra/*.*
-chown $NB_USER /import/data/*.tsv
+## chown $NB_USER /import/elyra/*.*
+# chown $NB_USER /import/data/*.tsv
 
 jupyter trust /import/*.ipynb
-jupyter trust /import/elyra/*.ipynb
-jupyter trust /import/notebooks/*.ipynb
+## jupyter trust /import/elyra/*.ipynb
+## jupyter trust /import/notebooks/*.ipynb
 
 jupyter lab --no-browser --allow-root 

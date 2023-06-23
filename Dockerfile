@@ -1,5 +1,5 @@
-## Jupyter container used for Data Science and Tensorflow
-FROM jupyter/tensorflow-notebook:tensorflow-2.6.0
+## Jupyter container used for Data Science
+FROM jupyter/scipy-notebook:2022-02-17
 
 LABEL maintainer="Blankenberg Lab"
 
@@ -25,20 +25,8 @@ RUN apt-get -y install libcudnn8
 
 # Python packages
 RUN pip install --no-cache-dir \
-    "colabfold[alphafold] @ git+https://github.com/sokrypton/ColabFold" \
-    tensorflow-gpu==2.7.0 \
-    tensorflow_probability==0.15.0 \
-    onnx \
-    onnx-tf \
-    tf2onnx \
-    skl2onnx \
-    scikit-image \
-    opencv-python \
-    nibabel \
-    onnxruntime \
     bioblend \
     galaxy-ie-helpers \
-    nbclassic \
     jupyterlab-git \
     jupyter_server \
     jupyterlab \
@@ -56,15 +44,22 @@ RUN pip install --no-cache-dir \
     bqplot \
     aquirdturtle_collapsible_headings
 
-RUN pip install --no-cache-dir 'elyra>=2.0.1' && jupyter lab build
 
 RUN pip install --no-cache-dir voila
 
-RUN pip install --upgrade jax==0.3.10 jaxlib==0.3.10 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-
 RUN pip install numpy==1.20.0
 
-RUN pip install 'qiskit[all]' && pip install 'qiskit-machine-learning[torch]'
+## INSTALL standard qiskit pypi packages
+RUN pip install 'qiskit[all]'
+
+## INSTALL qiskit research
+RUN git clone https://github.com/qiskit-research/qiskit-research.git && cd qiskit-research && pip install .
+
+## INSTALL xyz2pdb
+RUN pip install qiskit-xyz2pdb 
+
+## Add the protein folding notebook version from qiskit-research
+RUN curl -L https://raw.githubusercontent.com/qiskit-community/qiskit-research/main/docs/protein_folding/protein_folding.ipynb > /home/$NB_USER/qiskit/qiskit-tutorials/tutorials/algorithms/protein_folding.ipynb
 
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
@@ -86,17 +81,6 @@ COPY ./galaxy_script_job.py /home/$NB_USER/.ipython/profile_default/startup/00-l
 COPY ./ipython-profile.py /home/$NB_USER/.ipython/profile_default/startup/01-load.py
 COPY ./jupyter_server_config.py /home/$NB_USER/.jupyter/jupyter_server_config.py
 
-ADD ./*.ipynb /home/$NB_USER/
-
-RUN mkdir /home/$NB_USER/notebooks/
-RUN mkdir /home/$NB_USER/elyra/
-
-COPY ./notebooks/*.ipynb /home/$NB_USER/notebooks/
-COPY ./elyra/*.* /home/$NB_USER/elyra/
-
-RUN mkdir /home/$NB_USER/data
-COPY ./data/*.tsv /home/$NB_USER/data/
-
 RUN mkdir -p /home/$NB_USER/qiskit \
     && curl -L https://github.com/Qiskit/platypus/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-platypus* /home/$NB_USER/qiskit/platypus \
     && curl -L https://github.com/Qiskit/qiskit-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-qiskit-tutorials* /home/$NB_USER/qiskit/qiskit-tutorials \
@@ -115,6 +99,9 @@ ENV DEBUG=false \
     REMOTE_HOST=none \
     DISABLE_AUTH=true \
     GALAXY_URL=none
+
+## Add new alternative to IBMQ
+RUN pip install qiskit_ibm_provider
 
 RUN chown -R $NB_USER:users /home/$NB_USER /import
 
