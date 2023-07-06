@@ -49,21 +49,7 @@ RUN pip install --no-cache-dir voila
 
 RUN pip install numpy==1.20.0
 
-## Qiskit block 
-## INSTALL standard qiskit pypi packages
-RUN pip install 'qiskit[all]'
-
-## INSTALL qiskit research
-RUN git clone https://github.com/qiskit-research/qiskit-research.git && cd qiskit-research && pip install .
-
-## INSTALL xyz2pdb
-RUN pip install qiskit-xyz2pdb 
-
-## Add new alternative to IBMQ
-RUN pip install qiskit_ibm_provider
-## Qiskit block ends
-
-
+## INSTALLING Miniconda3 
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && mkdir /root/.conda \
@@ -84,7 +70,17 @@ COPY ./galaxy_script_job.py /home/$NB_USER/.ipython/profile_default/startup/00-l
 COPY ./ipython-profile.py /home/$NB_USER/.ipython/profile_default/startup/01-load.py
 COPY ./jupyter_server_config.py /home/$NB_USER/.jupyter/jupyter_server_config.py
 
-## More Qiskit stuff
+## Qiskit block 
+## INSTALL standard qiskit pypi packages
+RUN pip install 'qiskit[all]'
+
+## INSTALL qiskit research
+RUN git clone https://github.com/qiskit-research/qiskit-research.git && cd qiskit-research && pip install .
+
+## INSTALL xyz2pdb
+RUN pip install qiskit-xyz2pdb 
+
+## Qiskit Tutorial Materials
 RUN mkdir -p /home/$NB_USER/qiskit \
     && curl -L https://github.com/Qiskit/platypus/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-platypus* /home/$NB_USER/qiskit/platypus \
     && curl -L https://github.com/Qiskit/qiskit-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-qiskit-tutorials* /home/$NB_USER/qiskit/qiskit-tutorials \
@@ -94,7 +90,11 @@ RUN mkdir -p /home/$NB_USER/qiskit \
 
 ## Add the protein folding notebook version from qiskit-research
 RUN curl -L https://raw.githubusercontent.com/qiskit-community/qiskit-research/main/docs/protein_folding/protein_folding.ipynb > /home/$NB_USER/qiskit/qiskit-tutorials/tutorials/algorithms/protein_folding.ipynb
-## End more Qiskit stuff
+
+## INSTALLING Qiskit Run-time
+RUN pip install qiskit-ibm-runtime
+##
+## End Qiskit stuff
 
 # ENV variables to replace conf file
 ENV DEBUG=false \
