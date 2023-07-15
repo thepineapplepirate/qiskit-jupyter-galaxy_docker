@@ -60,9 +60,19 @@ RUN git clone https://github.com/qiskit-research/qiskit-research.git && cd qiski
 RUN pip install qiskit-xyz2pdb 
 
 ## Add new alternative to IBMQ
-RUN pip install qiskit_ibm_provider
-## Qiskit block ends
+RUN pip install qiskit-ibm-provider
 
+## COPY all the tutorial files and accessory files
+RUN mkdir -p /home/$NB_USER/qiskit \
+    && curl -L https://github.com/Qiskit/platypus/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-platypus* /home/$NB_USER/qiskit/platypus \
+    && curl -L https://github.com/Qiskit/qiskit-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-qiskit-tutorials* /home/$NB_USER/qiskit/qiskit-tutorials \
+    && curl -L https://github.com/qiskit-community/qiskit-community-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-community-tutorials* /home/$NB_USER/qiskit/qiskit-community-tutorials \
+    && curl -L https://github.com/qiskit-community/qiskit-textbook/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-textbook* /home/$NB_USER/qiskit/qiskit-textbook \
+    && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide
+
+## Add the protein folding notebook version from qiskit-research
+RUN curl -L https://raw.githubusercontent.com/qiskit-community/qiskit-research/main/docs/protein_folding/protein_folding.ipynb > /home/$NB_USER/qiskit/qiskit-tutorials/tutorials/algorithms/protein_folding.ipynb
+## End Qiskit Block
 
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
@@ -84,17 +94,6 @@ COPY ./galaxy_script_job.py /home/$NB_USER/.ipython/profile_default/startup/00-l
 COPY ./ipython-profile.py /home/$NB_USER/.ipython/profile_default/startup/01-load.py
 COPY ./jupyter_server_config.py /home/$NB_USER/.jupyter/jupyter_server_config.py
 
-## More Qiskit stuff
-RUN mkdir -p /home/$NB_USER/qiskit \
-    && curl -L https://github.com/Qiskit/platypus/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-platypus* /home/$NB_USER/qiskit/platypus \
-    && curl -L https://github.com/Qiskit/qiskit-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-qiskit-tutorials* /home/$NB_USER/qiskit/qiskit-tutorials \
-    && curl -L https://github.com/qiskit-community/qiskit-community-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-community-tutorials* /home/$NB_USER/qiskit/qiskit-community-tutorials \
-    && curl -L https://github.com/qiskit-community/qiskit-textbook/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-textbook* /home/$NB_USER/qiskit/qiskit-textbook \
-    && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide
-
-## Add the protein folding notebook version from qiskit-research
-RUN curl -L https://raw.githubusercontent.com/qiskit-community/qiskit-research/main/docs/protein_folding/protein_folding.ipynb > /home/$NB_USER/qiskit/qiskit-tutorials/tutorials/algorithms/protein_folding.ipynb
-## End more Qiskit stuff
 
 # ENV variables to replace conf file
 ENV DEBUG=false \
