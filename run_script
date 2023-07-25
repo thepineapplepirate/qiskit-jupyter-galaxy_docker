@@ -1,4 +1,4 @@
-docker run -it -p 8888:8888 -v /home/kumara/ssd_work/docker_tmp/:/import galaxy-integration:latest
+docker run -it -p 8888:8888 -v /home/user/path/docker_tmp/:/import docker-qiskit-jupyter-galaxy:latest
 
 list of packages:
 
@@ -14,14 +14,8 @@ altair, beautifulsoup4, bokeh, bottleneck, cloudpickle, conda-forge::blas=*=open
 
 ipympl and ipywidgets for interactive visualizations and plots in Python notebooks
 
-Facets for visualizing machine learning datasets
-
-
-jupyter/tensorflow-notebook
 Source on GitHub | Dockerfile commit history | Docker Hub image tags
-
-jupyter/tensorflow-notebook includes popular Python deep learning libraries.
 
 Everything in jupyter/scipy-notebook and its ancestor images
 
-tensorflow machine learning library
+Everything in Qiskit community (what's in pypi), plus qiskit-research. 
