@@ -9,6 +9,8 @@ Project name: An accessible infrastructure for quantum computing with Qiskit usi
 
 Project home page: https://github.com/thepineapplepirate/qiskit-jupyter-galaxy.git, 
 
+**Originally forked from: https://github.com/anuprulez/ml-jupyter-notebook.git**
+
 Docker file: https://raw.githubusercontent.com/thepineapplepirate/qiskit-jupyter-galaxy/main/Dockerfile
 
 Container at Docker hub: https://hub.docker.com/r/thepineapplepirate/docker-qiskit-jupyter-galaxy (tag: latest)
