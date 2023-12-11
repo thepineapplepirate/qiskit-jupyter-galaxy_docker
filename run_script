@@ -1,4 +1,4 @@
-docker run -it -p 8888:8888 -v /home/user/path/docker_tmp/:/import docker-qiskit-jupyter-galaxy:latest
+docker run -it -p 8888:8888 -v /home/user/path/docker_tmp/:/import thepineapplepirate/qiskit_galaxy:1.0.0
 
 list of packages:
 
@@ -10,8 +10,6 @@ jupyter/scipy-notebook includes popular packages from the scientific Python ecos
 
 Everything in jupyter/minimal-notebook and its ancestor images
 
-altair, beautifulsoup4, bokeh, bottleneck, cloudpickle, conda-forge::blas=*=openblas, cython, dask, dill, h5py, matplotlib-base, numba, numexpr, pandas, patsy, protobuf, pytables, scikit-image, scikit-learn, scipy, seaborn, sqlalchemy, statsmodel, sympy, widgetsnbextension, xlrd packages
-
 ipympl and ipywidgets for interactive visualizations and plots in Python notebooks
 
 Source on GitHub | Dockerfile commit history | Docker Hub image tags
@@ -19,3 +17,5 @@ Source on GitHub | Dockerfile commit history | Docker Hub image tags
 Everything in jupyter/scipy-notebook and its ancestor images
 
 Everything in Qiskit community (what's in pypi), plus qiskit-research. 
+
+For a full list, please look at Dockerfile
