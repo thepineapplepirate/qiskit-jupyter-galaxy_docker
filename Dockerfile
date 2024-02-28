@@ -1,5 +1,4 @@
 ## Jupyter container used for Data Science
-##shikaka rules!
 FROM jupyter/scipy-notebook:2022-02-17
 
 LABEL maintainer="Blankenberg Lab"
