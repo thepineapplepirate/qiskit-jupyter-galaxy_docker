@@ -47,11 +47,9 @@ RUN pip install --no-cache-dir \
 
 RUN pip install --no-cache-dir voila
 
-RUN pip install numpy==1.20.0
-
 ## Qiskit block 
 ## INSTALL standard qiskit pypi packages
-RUN pip install 'qiskit[all]'
+RUN pip install 'qiskit>=1.0.1,<2.0.0'
 
 ## INSTALL qiskit research
 RUN git clone https://github.com/qiskit-research/qiskit-research.git && cd qiskit-research && pip install .
@@ -61,6 +59,9 @@ RUN pip install qiskit-xyz2pdb
 
 ## Add new alternative to IBMQ
 RUN pip install qiskit-ibm-provider
+
+## Add qiskit runtime IBM client
+RUN pip install qiskit-ibm-runtime
 
 ## COPY all the tutorial files and accessory files
 RUN mkdir -p /home/$NB_USER/qiskit \
@@ -72,6 +73,13 @@ RUN mkdir -p /home/$NB_USER/qiskit \
 
 ## Add the protein folding notebook version from qiskit-research
 RUN curl -L https://raw.githubusercontent.com/qiskit-community/qiskit-research/main/docs/protein_folding/protein_folding.ipynb > /home/$NB_USER/qiskit/qiskit-tutorials/tutorials/algorithms/protein_folding.ipynb
+
+## Add additional modules needed for most qiskit notebooks, including hello-world.ipynb
+RUN pip install pylatexenc
+
+RUN pip install matplotlib
+
+##
 ## End Qiskit Block
 
 RUN wget \
