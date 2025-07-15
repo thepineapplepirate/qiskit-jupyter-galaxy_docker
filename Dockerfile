@@ -46,8 +46,8 @@ RUN pip install --no-cache-dir \
 RUN pip install --no-cache-dir voila
 
 ## Qiskit block 
-## INSTALL standard qiskit1.0 pypi package
-RUN pip install qiskit==1.0.2
+## INSTALL standard main qiskit pypi package
+RUN pip install qiskit==1.4.2
 
 ## INSTALL qiskit algorithms
 RUN pip install qiskit-algorithms==0.3.0
@@ -55,11 +55,30 @@ RUN pip install qiskit-algorithms==0.3.0
 ## INSTALL xyz-pdb
 RUN pip install qiskit-xyz2pdb 
 
-## Add new alternative to IBMQ
-RUN pip install qiskit-ibm-provider
+## Add Qiskit Aer
+RUN pip install qiskit-aer==0.15.0
 
 ## Add qiskit runtime IBM client
-RUN pip install qiskit-ibm-runtime==0.22.0
+RUN pip install qiskit-ibm-runtime==0.29.0
+
+## Add qiskit transpiler
+RUN pip install qiskit-ibm-transpiler==0.11.0
+
+## Add qiskit machine learning packages
+RUN pip install qiskit-machine-learning==0.8.2
+
+## Add qiskit-nature
+RUN pip install qiskit-nature==0.7.2
+
+## Add Classical ML packages and useful auxiliary packages
+RUN pip install scikit-dimension==0.3.4 \
+                scikit-learn==1.5.1 \
+                scipy==1.13.1 \
+                seaborn==0.13.2 \
+                tensorflow==2.16.2 \
+                torch==2.7.1 \
+                tqdm==4.66.4 \
+                umap-learn==0.5.7 
 
 ## COPY all the tutorial files and accessory files
 RUN mkdir -p /home/$NB_USER/qiskit \
@@ -70,15 +89,20 @@ RUN mkdir -p /home/$NB_USER/qiskit \
     && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide
 
 ## Add the protein folding repo from WL project
-RUN mkdir -p /home/$NB_USER/qiskit/quantum_protein_folding \
-    && tar -xzf qcpf.tar.gz --directory /home/$NB_USER/qiskit/quantum_protein_folding/
+# RUN mkdir -p /home/$NB_USER/qiskit/quantum_protein_folding \
+#     && tar -xzf qcpf.tar.gz --directory /home/$NB_USER/qiskit/quantum_protein_folding/
 
 ## Add additional modules needed for most qiskit notebooks, including hello-world.ipynb
-RUN pip install pylatexenc
-
-RUN pip install matplotlib==3.8.3
-
-RUN pip install numpy==1.26.4
+RUN pip install pylatexenc \
+        matplotlib==3.8.3 \
+        numpy==1.26.4 \
+        h5py==3.11.0 \
+        hfda==0.1.1 \
+        hydra-core==1.3.2 \ 
+        ipykernel==6.29.5 \
+        networkx==3.2.1 \
+        numpy==1.26.4 \
+        pandas==2.2.2
 
 ##
 ## End Qiskit Block
@@ -121,3 +145,4 @@ RUN chown -R $NB_USER:users /home/$NB_USER /import
 WORKDIR /import
 
 CMD /startup.sh
+
