@@ -1,5 +1,5 @@
 ## Jupyter container used for Data Science
-FROM jupyter/scipy-notebook:2022-02-17
+FROM jupyter/scipy-notebook:x86_64-python-3.10
 
 LABEL maintainer="Blankenberg Lab"
 
