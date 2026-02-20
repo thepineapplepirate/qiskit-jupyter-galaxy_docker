@@ -1,5 +1,5 @@
 ## Jupyter container used for Data Science
-FROM jupyter/scipy-notebook:2022-02-17
+FROM quay.io/jupyter/scipy-notebook:x86_64-python-3.12
 
 LABEL maintainer="Blankenberg Lab"
 
@@ -14,13 +14,22 @@ RUN apt-get -qq update && apt-get upgrade -y && apt-get install --no-install-rec
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install CUDA Toolkit and CuDNN
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
-RUN mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-RUN wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb" && dpkg -i cuda-keyring_1.0-1_all.deb && rm cuda-keyring_1.0-1_all.deb
-RUN add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-RUN apt-get update
-RUN apt-get -y install cuda
-RUN apt-get -y install libcudnn8
+# --- CUDA toolkit for Ubuntu 24.04 (Noble) ---
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl gnupg && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add NVIDIA CUDA apt repo (Ubuntu 24.04)
+RUN curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb \
+    -o /tmp/cuda-keyring.deb && \
+    dpkg -i /tmp/cuda-keyring.deb && \
+    rm -f /tmp/cuda-keyring.deb
+
+# Install CUDA Toolkit (pinned)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      cuda-toolkit-12-6 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Python packages
 RUN pip install --no-cache-dir \
@@ -29,7 +38,7 @@ RUN pip install --no-cache-dir \
     jupyterlab-git \
     jupyter_server \
     jupyterlab \
-    jupytext \ 
+    jupytext \
     lckr-jupyterlab-variableinspector \
     jupyterlab_execute_time \
     jupyterlab-kernelspy \
@@ -46,39 +55,12 @@ RUN pip install --no-cache-dir \
 RUN pip install --no-cache-dir voila
 
 ## Qiskit block 
-## INSTALL standard main qiskit pypi package
-RUN pip install qiskit==1.4.2
 
-## INSTALL qiskit algorithms
-RUN pip install qiskit-algorithms==0.3.0
-
-## INSTALL xyz-pdb
-RUN pip install qiskit-xyz2pdb 
-
-## Add Qiskit Aer
-RUN pip install qiskit-aer==0.15.0
-
-## Add qiskit runtime IBM client
-RUN pip install qiskit-ibm-runtime==0.29.0
-
-## Add qiskit transpiler
-RUN pip install qiskit-ibm-transpiler==0.11.0
-
-## Add qiskit machine learning packages
-RUN pip install qiskit-machine-learning==0.8.2
-
-## Add qiskit-nature
-RUN pip install qiskit-nature==0.7.2
-
-## Add Classical ML packages and useful auxiliary packages
-RUN pip install scikit-dimension==0.3.4 \
-                scikit-learn==1.5.1 \
-                scipy==1.13.1 \
-                seaborn==0.13.2 \
-                tensorflow==2.16.2 \
-                torch==2.7.1 \
-                tqdm==4.66.4 \
-                umap-learn==0.5.7 
+## Add QBioCode, which should install most needed Qiskit packages, as well as classical ML packages and other auxiliar dependencies
+RUN git clone --branch fubob --single-branch https://github.com/IBM/QBioCode.git && \
+    cd QBioCode && \
+    pip install . && \
+    pip install ".[apps]"
 
 ## COPY all the tutorial files and accessory files
 RUN mkdir -p /home/$NB_USER/qiskit \
@@ -86,7 +68,12 @@ RUN mkdir -p /home/$NB_USER/qiskit \
     && curl -L https://github.com/Qiskit/qiskit-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-qiskit-tutorials* /home/$NB_USER/qiskit/qiskit-tutorials \
     && curl -L https://github.com/qiskit-community/qiskit-community-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-community-tutorials* /home/$NB_USER/qiskit/qiskit-community-tutorials \
     && curl -L https://github.com/qiskit-community/qiskit-textbook/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-textbook* /home/$NB_USER/qiskit/qiskit-textbook \
-    && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide
+    && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide \
+    && mkdir -p /home/$NB_USER/qiskit \
+        && curl -L https://github.com/IBM/QBioCode/archive/refs/heads/fubob.tar.gz \
+            | tar -xz --directory /home/$NB_USER/qiskit/ \
+        && mv /home/$NB_USER/qiskit/QBioCode-fubob /home/$NB_USER/qiskit/QBioCode
+
 
 ## Add the protein folding repo from WL project
 # RUN mkdir -p /home/$NB_USER/qiskit/quantum_protein_folding \
@@ -98,7 +85,7 @@ RUN pip install pylatexenc \
         numpy==1.26.4 \
         h5py==3.11.0 \
         hfda==0.1.1 \
-        hydra-core==1.3.2 \ 
+        hydra-core==1.3.2 \
         ipykernel==6.29.5 \
         networkx==3.2.1 \
         numpy==1.26.4 \
@@ -107,11 +94,10 @@ RUN pip install pylatexenc \
 ##
 ## End Qiskit Block
 
-RUN wget \
-    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && mkdir /root/.conda \
-    && bash Miniconda3-latest-Linux-x86_64.sh -b \
-    && rm -f Miniconda3-latest-Linux-x86_64.sh 
+# RUN wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && \
+#     mkdir -p /root/.conda && \
+#     bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda && \
+#     rm -f Miniforge3-Linux-x86_64.sh
 
 RUN conda --version
 
