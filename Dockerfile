@@ -57,10 +57,15 @@ RUN pip install --no-cache-dir voila
 ## Qiskit block 
 
 ## Add QBioCode, which should install most needed Qiskit packages, as well as classical ML packages and other auxiliar dependencies
-RUN git clone https://github.com/IBM/QBioCode.git && \
-    cd QBioCode && \
-    pip install . && \
-    pip install ".[apps]"
+RUN set -eux; \
+    mkdir -p /home/$NB_USER; \
+    git clone --depth 1 https://github.com/IBM/QBioCode.git /home/$NB_USER/QBioCode; \
+    pip install /home/$NB_USER/QBioCode; \
+    pip install "/home/$NB_USER/QBioCode[apps]"; \
+    rm -rf /home/$NB_USER/QBioCode/*.egg-info /home/$NB_USER/QBioCode/*/*.egg-info || true; \
+    mkdir -p /import/jupyter; \
+    ln -sf /home/$NB_USER/QBioCode /import/jupyter/QBioCode; \
+    chown -R $NB_USER:$NB_USER /home/$NB_USER/QBioCode /import/jupyter/QBioCode || true
 
 ## COPY all the tutorial files and accessory files
 RUN mkdir -p /home/$NB_USER/qiskit \
@@ -68,13 +73,7 @@ RUN mkdir -p /home/$NB_USER/qiskit \
     && curl -L https://github.com/Qiskit/qiskit-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/Qiskit-qiskit-tutorials* /home/$NB_USER/qiskit/qiskit-tutorials \
     && curl -L https://github.com/qiskit-community/qiskit-community-tutorials/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-community-tutorials* /home/$NB_USER/qiskit/qiskit-community-tutorials \
     && curl -L https://github.com/qiskit-community/qiskit-textbook/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-textbook* /home/$NB_USER/qiskit/qiskit-textbook \
-    && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide \
-    && mkdir -p /home/$NB_USER/QBioCode \
-    && curl -L https://github.com/IBM/QBioCode/archive/refs/heads/main.tar.gz \
-    | tar -xz --strip-components=1 --directory /home/$NB_USER/QBioCode
-
-
-## Add the protein folding repo from WL project
+    && curl -L https://github.com/qiskit-community/qiskit-pocket-guide/tarball/master | tar -xz --directory /home/$NB_USER/qiskit/ && mv /home/$NB_USER/qiskit/qiskit-community-qiskit-pocket-guide* /home/$NB_USER/qiskit/qiskit-pocket-guide \## Add the protein folding repo from WL project
 # RUN mkdir -p /home/$NB_USER/qiskit/quantum_protein_folding \
 #     && tar -xzf qcpf.tar.gz --directory /home/$NB_USER/qiskit/quantum_protein_folding/
 
