@@ -1,28 +1,25 @@
 #!/bin/bash
+set -euo pipefail
 
-# The IPython image starts as privileged user.
-# The parent Galaxy server is mounting data into /import with the same 
-# permissions as the Galaxy server is running on.
-# In case of 1450 as UID and GID we are fine, because our preconfigured ipython
-# user owns this UID/GID. 
-# (1450 is the user id the Galaxy-Docker Image is using)
-# If /import is not owned by 1450 we need to create a new user with the same
-# UID/GID as /import and make everything accessible to this new user.
-#
-# In the end the IPython Server is started as non-privileged user. Either
-# with the UID 1450 (preconfigured jupyter user) or a newly created 'galaxy' user
-# with the same UID/GID as /import.
+export PATH="/home/${NB_USER}/.local/bin:${PATH}"
 
-export PATH=/home/$NB_USER/.local/bin:$PATH
-
+# Generate/refresh the landing notebook(s)
 python /get_notebook.py
 
+# Copy bundled notebooks into /import on first run
+# (Don't chown here; the entrypoint already runs us as the correct UID/GID.)
 if [ ! -f /import/home_page.ipynb ]; then
-    cp /home/$NB_USER/*.ipynb /import/
-    chown $NB_USER /import/*.ipynb
+    # Copy only if there are any notebooks in the image
+    shopt -s nullglob
+    nb_files=(/home/"${NB_USER}"/*.ipynb)
+    if [ ${#nb_files[@]} -gt 0 ]; then
+        cp "${nb_files[@]}" /import/
+    fi
+    shopt -u nullglob
 fi
 
+# Trust notebooks (best-effort; don't fail the whole tool if trust fails)
+jupyter trust /import/*.ipynb || true
 
-jupyter trust /import/*.ipynb
-
-jupyter lab --no-browser --allow-root 
+# Start JupyterLab as the current user (should NOT be root with the new entrypoint)
+exec jupyter lab --no-browser --ip=0.0.0.0 --port=8888
