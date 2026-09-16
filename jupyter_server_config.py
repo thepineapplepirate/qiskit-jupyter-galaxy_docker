@@ -19,15 +19,20 @@ if os.environ['CORS_ORIGIN'] != 'none':
     CORS_ORIGIN = os.environ.get('CORS_ORIGIN', '')
     CORS_ORIGIN_HOSTNAME = CORS_ORIGIN.split('://')[1]
 
+# Jupyter Server 2.x rejects the old multi-line CSP when CORS_ORIGIN is empty:
+# it produced an invalid `ws://` source and newline-containing header value.
+# Keep the tool embeddable in Galaxy while emitting one valid header value.
+origin_sources = " %s" % CORS_ORIGIN if CORS_ORIGIN else ""
 headers = {
     'X-Frame-Options': 'ALLOWALL',
-        'Content-Security-Policy': """
-            default-src 'self' %(CORS_ORIGIN)s;
-            img-src 'self' %(CORS_ORIGIN)s;
-            connect-src 'self' %(WS_CORS_ORIGIN)s;
-            style-src 'unsafe-inline' 'self' %(CORS_ORIGIN)s;
-            script-src 'unsafe-inline' 'self' %(CORS_ORIGIN)s;
-        """ % {'CORS_ORIGIN': CORS_ORIGIN, 'WS_CORS_ORIGIN': 'ws://%s' % CORS_ORIGIN_HOSTNAME}
+    'Content-Security-Policy': (
+        "default-src 'self'%s; "
+        "img-src 'self' data: blob:%s; "
+        "connect-src 'self' ws: wss:%s; "
+        "style-src 'unsafe-inline' 'self'%s; "
+        "script-src 'unsafe-inline' 'unsafe-eval' 'self'%s;"
+        % (origin_sources, origin_sources, origin_sources, origin_sources, origin_sources)
+    ),
 }
 
 c.ServerApp.allow_origin = '*'

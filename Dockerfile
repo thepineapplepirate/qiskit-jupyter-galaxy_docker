@@ -42,76 +42,85 @@ RUN pip install --no-cache-dir \
     jupyter_server \
     jupyterlab \
     jupytext \
-    lckr-jupyterlab-variableinspector \
-    jupyterlab_execute_time \
     jupyterlab-kernelspy \
-    jupyterlab-system-monitor \
     jupyterlab-fasta \
     jupyterlab-geojson \
-    jupyterlab-topbar \
     jupyter_bokeh \
-    jupyterlab_nvdashboard \
-    bqplot \
-    aquirdturtle_collapsible_headings
+    bqplot
 
 RUN pip install --no-cache-dir voila
 
-## Qiskit block
-RUN set -eux; \
-    mkdir -p /home/$NB_USER; \
-    git clone --depth 1 https://github.com/IBM/QBioCode.git /home/$NB_USER/QBioCode; \
-    pip install /home/$NB_USER/QBioCode; \
-    pip install "/home/$NB_USER/QBioCode[apps]"; \
-    rm -rf /home/$NB_USER/QBioCode/*.egg-info /home/$NB_USER/QBioCode/*/*.egg-info || true; \
-    mkdir -p /import/jupyter; \
-    ln -sf /home/$NB_USER/QBioCode /import/jupyter/QBioCode; \
-    chown -R $NB_USER:users /home/$NB_USER/QBioCode /import/jupyter/QBioCode || true
+## Shared Qiskit/protein-folding stack
+# The build context is the parent Desktop/gitrepos directory. These COPY
+# paths intentionally use local checkouts so this image can be tested before
+# the modernization branches are published to PyPI.
+COPY QBioCode /opt/src/QBioCode
+COPY QTF /opt/src/QTF
+COPY pheat /opt/src/pheat
+COPY quantum-protein-folding-fcc /opt/src/quantum-protein-folding-fcc
+COPY quantum-protein-folding-tetrahedral /opt/src/quantum-protein-folding-tetrahedral
 
 RUN set -eux; \
-    mkdir -p /home/$NB_USER/qiskit; \
-    mkdir -p /home/$NB_USER/qiskit/platypus; \
-    curl -fsSL https://github.com/Qiskit/platypus/tarball/HEAD \
-      | tar -xz --strip-components=1 --directory /home/$NB_USER/qiskit/platypus; \
-    mkdir -p /home/$NB_USER/qiskit/qiskit-tutorials; \
-    curl -fsSL https://github.com/Qiskit/qiskit-tutorials/tarball/HEAD \
-      | tar -xz --strip-components=1 --directory /home/$NB_USER/qiskit/qiskit-tutorials; \
-    mkdir -p /home/$NB_USER/qiskit/qiskit-community-tutorials; \
-    curl -fsSL https://github.com/qiskit-community/qiskit-community-tutorials/tarball/HEAD \
-      | tar -xz --strip-components=1 --directory /home/$NB_USER/qiskit/qiskit-community-tutorials; \
-    mkdir -p /home/$NB_USER/qiskit/qiskit-textbook; \
-    curl -fsSL https://github.com/qiskit-community/qiskit-textbook/tarball/HEAD \
-      | tar -xz --strip-components=1 --directory /home/$NB_USER/qiskit/qiskit-textbook; \
-    mkdir -p /home/$NB_USER/qiskit/qiskit-pocket-guide; \
-    curl -fsSL https://github.com/qiskit-community/qiskit-pocket-guide/tarball/HEAD \
-      | tar -xz --strip-components=1 --directory /home/$NB_USER/qiskit/qiskit-pocket-guide; \
-    chown -R $NB_USER:users /home/$NB_USER/qiskit || true
+    python -m pip install --no-cache-dir --upgrade pip; \
+    python -m pip install --no-cache-dir \
+      -r /opt/src/QBioCode/requirements.txt \
+      'ray>=2.47,<3' \
+      'mdtraj>=1.9' \
+      'biopython>=1.80'; \
+    python -m pip install --no-cache-dir /opt/src/pheat; \
+    python -m pip install --no-cache-dir /opt/src/QBioCode; \
+    python -m pip install --no-cache-dir /opt/src/quantum-protein-folding-fcc; \
+    python -m pip install --no-cache-dir /opt/src/quantum-protein-folding-tetrahedral; \
+    python -m pip install --no-cache-dir '/opt/src/QTF[workflows,notebook]'; \
+    rm -rf /opt/src/*/*.egg-info /opt/src/*/*/*.egg-info || true
 
-RUN pip install --no-cache-dir \
-    pylatexenc \
-    matplotlib==3.8.3 \
-    numpy==1.26.4 \
-    h5py==3.11.0 \
-    hfda==0.1.1 \
-    hydra-core==1.3.2 \
-    ipykernel==6.29.5 \
-    networkx==3.2.1 \
-    pandas==2.2.2
+# QTF and the modern prebuilt extensions target JupyterLab 4. Keep the core
+# and extension ABI aligned after all domain packages resolve dependencies.
+RUN python -m pip install --no-cache-dir --upgrade \
+    'jupyterlab>=4.4,<5' \
+    'notebook>=7,<8' && \
+    python -m pip uninstall -y \
+      jupyterlab-nvdashboard \
+      jupyterlab-system-monitor \
+      jupyterlab-topbar \
+      jupyterlab-execute-time \
+      lckr-jupyterlab-variableinspector \
+      jupyter-resource-usage || true
+
+# qiskit-ibm-transpiler 0.18 requires NetworkX 2.8.5. Keep the inherited
+# scikit-image package compatible with that constraint.
+RUN python -m pip install --no-cache-dir 'scikit-image<0.25'
 
 RUN conda --version
-RUN conda install -y -q -c conda-forge -c bioconda kalign2=2.04 hhsuite=3.3.0
+# The Jupyter base image includes mamba; use it here because the classic
+# conda solver can misparse the BLAS metapackage while solving this mix.
+RUN mamba install -y -q -c conda-forge -c bioconda \
+    kalign2=2.04 hhsuite=3.3.0 'gromacs>=2026'
+
+RUN set -eux; \
+    mkdir -p "/home/$NB_USER/Biophysics/Lattice Models/FCC Lattice Models"; \
+    mkdir -p "/home/$NB_USER/Biophysics/Lattice Models/Tetrahedral"; \
+    mkdir -p "/home/$NB_USER/Biophysics/Continuous Space Models/QTF"; \
+    mkdir -p "/home/$NB_USER/Quantum Machine Learning"; \
+    cp /opt/src/quantum-protein-folding-fcc/workflow_demo.ipynb "/home/$NB_USER/Biophysics/Lattice Models/FCC Lattice Models/"; \
+    cp /opt/src/quantum-protein-folding-tetrahedral/notebooks/pf_on_quantumhardware.ipynb "/home/$NB_USER/Biophysics/Lattice Models/Tetrahedral/"; \
+    cp /opt/src/QTF/QTF.ipynb "/home/$NB_USER/Biophysics/Continuous Space Models/QTF/"; \
+    cp -a /opt/src/QBioCode/tutorial "/home/$NB_USER/Quantum Machine Learning/QBioCode"; \
+    cp -a /opt/src/QBioCode/docs/_build "/home/$NB_USER/Quantum Machine Learning/QBioCode/"; \
+    chown -R $NB_USER:users "/home/$NB_USER/Biophysics" "/home/$NB_USER/Quantum Machine Learning" /opt/src
 
 # Ensure "python" is always resolvable even if PATH gets weird
 RUN ln -sf /opt/conda/bin/python /usr/local/bin/python
 
-ADD ./startup.sh /startup.sh
-ADD ./get_notebook.py /get_notebook.py
+ADD qiskit-jupyter-galaxy_docker/startup.sh /startup.sh
+ADD qiskit-jupyter-galaxy_docker/get_notebook.py /get_notebook.py
 
 RUN mkdir -p /home/$NB_USER/.ipython/profile_default/startup/
 RUN mkdir -p /import
 
-COPY ./galaxy_script_job.py /home/$NB_USER/.ipython/profile_default/startup/00-load.py
-COPY ./ipython-profile.py   /home/$NB_USER/.ipython/profile_default/startup/01-load.py
-COPY ./jupyter_server_config.py /home/$NB_USER/.jupyter/jupyter_server_config.py
+COPY qiskit-jupyter-galaxy_docker/galaxy_script_job.py /home/$NB_USER/.ipython/profile_default/startup/00-load.py
+COPY qiskit-jupyter-galaxy_docker/ipython-profile.py   /home/$NB_USER/.ipython/profile_default/startup/01-load.py
+COPY qiskit-jupyter-galaxy_docker/jupyter_server_config.py /home/$NB_USER/.jupyter/jupyter_server_config.py
 
 # ENV variables to replace conf file
 ENV DEBUG=false \
@@ -132,10 +141,16 @@ RUN mkdir -p /export/ && \
     chmod -R u+rwX,g+rwX /home/$NB_USER/ /export/
 
 # --- NEW: Galaxy-aware entrypoint ---
-COPY ./galaxy-entrypoint.sh /usr/local/bin/galaxy-entrypoint.sh
+COPY qiskit-jupyter-galaxy_docker/galaxy-entrypoint.sh /usr/local/bin/galaxy-entrypoint.sh
 RUN chmod +x /usr/local/bin/galaxy-entrypoint.sh
 
 WORKDIR /import
+
+# The upstream notebook image checks Jupyter every three seconds with a
+# one-second timeout. Under amd64 emulation on Apple Silicon those timed-out
+# probes can remain alive and eventually starve kernels and terminals. Galaxy
+# already owns interactive-tool lifecycle/readiness, so do not inherit it.
+HEALTHCHECK NONE
 
 ENTRYPOINT ["/usr/local/bin/galaxy-entrypoint.sh"]
 CMD ["/startup.sh"]
