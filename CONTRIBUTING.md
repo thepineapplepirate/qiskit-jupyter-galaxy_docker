@@ -1,17 +1,32 @@
-# Contributing to 
+# Contributing
 
-Following steps can be followed to start contributing to this project:
+1. Fork this repository and create a feature branch.
+2. Clone the QBioCode, QTF, PHeat, FCC, and tetrahedral repositories beside
+   this repository, using the directory layout documented in `README.md`.
+3. Build the image from the common parent directory.
+4. Smoke-test a terminal, a blank Python notebook, and each bundled workflow.
+5. Open a pull request describing dependency, image-layout, and Galaxy-tool
+   changes.
 
-1. Fork this repository ([Galaxy Qiskit and Jupyterlab](https://github.com/thepineapplepirate/qiskit-jupyter-galaxy.git)).
-2. Create a new branch.
-3. Install Docker (version: 20.10.13) on the host machine
-4. New packages can be added or existing packages can be updated in the Dockerfile
-5. Container can be built, run and updated in docker hub:
-    - `docker build -t new_container:latest .`
-    - `docker tag new_container:latest <<docker username>>/<<new tag name>>`
-    - `docker push <<docker username>>/<<new tag name>>`
+An amd64 Linux host is recommended for full builds and notebook execution.
+Apple Silicon is suitable for UI and Galaxy integration work through amd64
+emulation, but it is significantly slower.
+
+Do not commit credentials, API keys, generated build outputs, or local absolute
+symlinks. Runtime credentials are supplied by Galaxy.
+
+## Publishing an image
+
+After validation, tag and push the image explicitly:
+
+```bash
+docker push thepineapplepirate/qiskit_galaxy:2.1.0
+```
+
+Publishing requires authorization for the Docker Hub repository and is
+separate from merging a source-code pull request.
 
 ## Contributors
-1. [ThePineapplePirate](https://github.com/thepineapplepirate) (Main contributor: developed the project).
-2. [Dan Blankenberg](https://github.com/blankenberg) (Devised the idea of the project).
-3. ...
+
+- [ThePineapplePirate](https://github.com/thepineapplepirate)
+- [Dan Blankenberg](https://github.com/blankenberg)

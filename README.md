@@ -1,50 +1,84 @@
-# GPU-enabled docker container with Jupyterlab and Qiskit.
+# Qiskit JupyterLab for Galaxy
 
-## General information
+GPU-capable JupyterLab image and Galaxy interactive-tool definition for quantum
+biology and protein-folding workflows.
 
-Project name: An accessible infrastructure for quantum computing with Qiskit using a docker-based Jupyterlab in Galaxy.
+The `2.1.0` image contains:
 
-Project home page: https://github.com/thepineapplepirate/qiskit-jupyter-galaxy_docker.git, 
+- QBioCode
+- QTF and PHeat
+- FCC and tetrahedral protein-folding models
+- Qiskit and the supporting scientific Python stack
+- JupyterLab 4 and Notebook 7
+- GROMACS, HH-suite, and Kalign
+- CUDA 12.6 tooling for compatible Linux GPU hosts
 
-**Originally forked from: https://github.com/anuprulez/ml-jupyter-notebook.git**
+User-facing notebooks are organized under `Biophysics` and
+`Quantum Machine Learning`. Complete local repository checkouts are copied into
+`/opt/src` and installed into the container's Conda environment.
 
-Docker file: https://raw.githubusercontent.com/thepineapplepirate/qiskit-jupyter-galaxy_docker/main/Dockerfile
+## Build
 
-Container at Docker hub: https://hub.docker.com/r/thepineapplepirate/qiskit_galaxy (tag: 1.0.0)
+The Docker build context must be the parent directory containing these sibling
+checkouts:
 
-Data: This copies and imports most of Qiskit's tutorials and jupyter notebooks.
+```text
+gitrepos/
+├── QBioCode/
+├── QTF/
+├── pheat/
+├── quantum-protein-folding-fcc/
+├── quantum-protein-folding-tetrahedral/
+└── qiskit-jupyter-galaxy_docker/
+```
 
-Operating system(s): Linux
+From `gitrepos`:
 
-Programming language(s): Python, Docker, XML
+```bash
+docker build \
+  --platform linux/amd64 \
+  -f qiskit-jupyter-galaxy_docker/Dockerfile \
+  -t thepineapplepirate/qiskit_galaxy:2.1.0 \
+  .
+```
 
-Other requirements: Docker 20.10.13, (Optional) CUDA 11.6, CUDA DNN 8
+The image is large because it includes CUDA, PyTorch, GROMACS, and the complete
+scientific stack. Building and running it on an amd64 Linux host is recommended.
+Apple Silicon can use amd64 emulation for integration testing, but builds and
+notebook startup are substantially slower.
 
-License: MIT License
+## Standalone smoke test
 
+```bash
+mkdir -p /tmp/qiskit-jupyter/import
 
-## Running steps:
+docker run --rm \
+  --platform linux/amd64 \
+  -p 8888:8888 \
+  -v /tmp/qiskit-jupyter/import:/import \
+  thepineapplepirate/qiskit_galaxy:2.1.0
+```
 
-1. Download container: `docker pull thepineapplepirate/qiskit_galaxy:1.0.0`
+Open `http://localhost:8888/ipython/lab`.
 
-2. Run container (on host without Nvidia GPU): `docker run -it -p 8888:8888 -v <<path to local folder>>:/import thepineapplepirate/qiskit_galaxy:1.0.0`
+On a compatible NVIDIA Linux host, add `--gpus all` to `docker run`.
 
-3. Run container (on host with Nvidia GPU): `docker run -it --gpus all -p 8888:8888 -v <<path to local folder>>:/import thepineapplepirate/qiskit_galaxy:1.0.0`
+## Galaxy integration
 
-4. Open the link to the Jupyterlab (e.g. `http://<<host>>:8888/ipython/lab`)
+Install `interactivetool_qiskit_jupyter_notebook.xml` and
+`default_notebook.ipynb` together in Galaxy's interactive-tool directory. The
+tool definition launches image tag `2.1.0` and exposes the curated notebook
+directories inside Galaxy's `/import/jupyter` working directory.
 
-## List of packages
+The container image does not define a Docker health check. Galaxy manages the
+interactive-tool lifecycle and readiness; disabling the upstream one-second
+probe also prevents process accumulation under amd64 emulation.
 
-- Python 
-- Jupyterlab 
-- Jupyterlab-git 
-- CUDA 
-- CUDA DNN 
-- Bqplot 
-- Bokeh 
-- Voila 
-- Numpy
-- Jupyterlab-nvdashboard 
-- Bioblend 
-- Qiskit (all) and Qiskit-research
-- many more ...
+## Container registry
+
+Published images are available at
+[Docker Hub](https://hub.docker.com/r/thepineapplepirate/qiskit_galaxy).
+
+## License
+
+This repository is licensed under the terms in [LICENSE.md](LICENSE.md).

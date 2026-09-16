@@ -20,6 +20,16 @@ if [ "${TARGET_UID}" -eq 0 ]; then
   exec "$@"
 fi
 
+# Galaxy commonly starts interactive containers with --user set to the host
+# UID/GID. In that case this process is already non-root and cannot create a
+# passwd/group entry. Keep the supplied numeric identity and let the mounted
+# Galaxy paths provide the required permissions.
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Galaxy entrypoint: running as supplied non-root UID=$(id -u) GID=$(id -g)"
+  mkdir -p /import/jupyter /import/jupyter/outputs /import/jupyter/galaxy_inputs || true
+  exec "$@"
+fi
+
 # Create matching group/user if needed
 if ! getent group "${TARGET_GID}" >/dev/null 2>&1; then
   groupadd -g "${TARGET_GID}" gxgrp
