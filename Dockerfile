@@ -103,7 +103,7 @@ RUN set -eux; \
     mkdir -p "/home/$NB_USER/Biophysics/Continuous Space Models/QTF"; \
     mkdir -p "/home/$NB_USER/Quantum Machine Learning"; \
     cp /opt/src/quantum-protein-folding-fcc/workflow_demo.ipynb "/home/$NB_USER/Biophysics/Lattice Models/FCC Lattice Models/"; \
-    cp /opt/src/quantum-protein-folding-tetrahedral/notebooks/pf_on_quantumhardware.ipynb "/home/$NB_USER/Biophysics/Lattice Models/Tetrahedral/"; \
+    cp /opt/src/quantum-protein-folding-tetrahedral/docs/protein_folding_qiskit2.ipynb "/home/$NB_USER/Biophysics/Lattice Models/Tetrahedral/"; \
     cp /opt/src/QTF/QTF.ipynb "/home/$NB_USER/Biophysics/Continuous Space Models/QTF/"; \
     cp -a /opt/src/QBioCode/tutorial "/home/$NB_USER/Quantum Machine Learning/QBioCode"; \
     cp -a /opt/src/QBioCode/docs/_build "/home/$NB_USER/Quantum Machine Learning/QBioCode/"; \

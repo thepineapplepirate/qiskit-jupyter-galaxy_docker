@@ -32,6 +32,21 @@ gitrepos/
 └── qiskit-jupyter-galaxy_docker/
 ```
 
+Use these branches when assembling the build context:
+
+| Checkout | Branch |
+| --- | --- |
+| `QBioCode` | `qiskit-stack-modernization` |
+| `QTF` | `main` |
+| `pheat` | `main` |
+| `quantum-protein-folding-fcc` | `qiskit-2-modernization` |
+| `quantum-protein-folding-tetrahedral` | `main` |
+| `qiskit-jupyter-galaxy_docker` | `main` (or the branch under review) |
+
+The FCC checkout installs the `fcc` Python package. The tetrahedral checkout
+installs `protein_folding`. The legacy local `qufold` implementation is not a
+build input.
+
 From `gitrepos`:
 
 ```bash
