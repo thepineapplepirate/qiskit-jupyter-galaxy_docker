@@ -63,7 +63,6 @@ COPY quantum-protein-folding-tetrahedral /opt/src/quantum-protein-folding-tetrah
 RUN set -eux; \
     python -m pip install --no-cache-dir --upgrade pip; \
     python -m pip install --no-cache-dir \
-      -r /opt/src/QBioCode/requirements.txt \
       'ray>=2.47,<3' \
       'mdtraj>=1.9' \
       'biopython>=1.80'; \
@@ -106,7 +105,6 @@ RUN set -eux; \
     cp /opt/src/quantum-protein-folding-tetrahedral/docs/protein_folding_qiskit2.ipynb "/home/$NB_USER/Biophysics/Lattice Models/Tetrahedral/"; \
     cp /opt/src/QTF/QTF.ipynb "/home/$NB_USER/Biophysics/Continuous Space Models/QTF/"; \
     cp -a /opt/src/QBioCode/tutorial "/home/$NB_USER/Quantum Machine Learning/QBioCode"; \
-    cp -a /opt/src/QBioCode/docs/_build "/home/$NB_USER/Quantum Machine Learning/QBioCode/"; \
     chown -R $NB_USER:users "/home/$NB_USER/Biophysics" "/home/$NB_USER/Quantum Machine Learning" /opt/src
 
 # Ensure "python" is always resolvable even if PATH gets weird
